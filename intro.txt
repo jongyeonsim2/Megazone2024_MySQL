@@ -1,0 +1,19 @@
+
+
+
+- MySQL 환경 설정
+  Eclipse + DBeaver( Client ) + MySQL Server
+
+  VS Code, Intellij, WrokBench
+
+  Visual Studio 2019 x64
+
+- Learning SQL 러닝 SQL, 한빛미디어
+
+show databases;
+
+use sakila;
+
+show tables; => 23 rows
+
+
