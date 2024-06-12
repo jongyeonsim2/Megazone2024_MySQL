@@ -109,6 +109,25 @@ show tables; => 23 rows
          MySQL 을 사용하기 위해 로그인 한 상태 => 세션이 시작(OPEN)되었다고 함.
          로그인 한 상태에서 로그 아웃을 한 상태 => 세션이 종료(CLOSE)되었다고 함.
          
+         
+         session 과 tcp/ip 관계
+         
+         1. MySQL Terminal Clinet 2 개 실행
+            - 동일한 유저 의 동일한 스키마를 사용하는 세션.
+            
+         2. Mysql Session 2 개,  Clinet 2 개 이니까
+            - session A( client A, 화면 A ), session B( client A, 화면 B )
+            
+         3. session A 는 select 실행 완료.
+            session B 는 update 실행 완료.
+            
+         4. 위의 두 요청을 MySQL Server 에서 받아서, 처리 후, 
+            결과를 각각 요청한 쪽으로 전송.
+            
+            여기서, MySQL Server 어떻게 구분해 결과를 전송하게 될까?
+            
+            TCP/IP( 컴퓨터 주소 ), PORT 정보( 프로세스 구별 정보 )가 필요.
+               
        - 트랜잭션(transaction)
          
          트랜잭션이 끝나는 경우 :
@@ -189,8 +208,16 @@ show tables; => 23 rows
        - MySQL 8.4 Reference Manual
          https://dev.mysql.com/doc/refman/8.4/en/
          
+   2.4 view
+       - 가상의 테이블 이라고 생각하고,
+       - select 문장에 이름을 부여해서, 부여된 이름을 
+         마치 테이블의 이름처럼 사용.
+       - 목적
+         select  문자의 재사용.
+         select 문장이 50 라인이라면, 가독성(유지보수)에 도움이 됨.
          
-       
+         실제 table의 사용 제한을 할 수 있음.
+          => 인사 table 인사고과 정보 칼럼만 제외하고 조회되도록 할 수 있음.
        
 
 

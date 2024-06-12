@@ -83,6 +83,24 @@ values
 
 select * from person ;
 
+delete from person
+ where person_id = 2;
+
+insert into favorite_food ( person_id, food )
+values (2, 'fruit');
+
+select * from favorite_food ff ;
+
+
+drop table person;
+
+drop table favorite_food;
+
+
+
+
+
+
 
 
 
