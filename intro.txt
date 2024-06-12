@@ -104,7 +104,7 @@ show tables; => 23 rows
 		      
 		    
 2. 쿼리 입문
-   2.0 세션(session), 트랜잭션(transaction), lock
+   2.0 세션(session), 트랜잭션(transaction), lock, key
        - 세션(session)
          MySQL 을 사용하기 위해 로그인 한 상태 => 세션이 시작(OPEN)되었다고 함.
          로그인 한 상태에서 로그 아웃을 한 상태 => 세션이 종료(CLOSE)되었다고 함.
@@ -112,7 +112,7 @@ show tables; => 23 rows
        - 트랜잭션(transaction)
          
          트랜잭션이 끝나는 경우 :
-            rollback, commit, session 종료(  ) 
+            rollback, commit, session 종료( exit 명령어, X 버튼 - 프로그램 종료 ) 
             
             정상 : commit
             비정상 : rollback, session 종료
@@ -139,11 +139,24 @@ show tables; => 23 rows
             B : update 중( A 의 transaction 종료될 때까지 대기 )
             DML 성능이 떨어지게 됨.
             
-            발생시점 : 
+            발생시점 : 어떤 한 행에 update, delete 가 진행되었고,
+            		트랜잭션을 완료하지 않은 경우.
+            		commit or rollback 를 해야 함.
          
          table lock(테이블 전체)
-         
-            발생시점 : 
+            
+            발생시점 : 테이블에 한 건이 상의 데이터가 있는 상태.
+            		모든 행에 update, delete 가 진행되었고,
+            		트랜잭션을 완료하지 않은 경우.
+            		commit or rollback 를 해야 함.
+       
+       - key( 기본키, 외래키, 복합키 )
+         기본키(primary key) : 테이블의 각 행에 대한 고유 식별자의 역할 
+         외래키(foreign key) : 다른 테이블에서 참조하는 기본키가 칼럼인 경우
+         복합키(compound key) : 2개 이상의 칼럼을 결합하여 고유한 값을 가지는 키
+         자연키 : 개체의 정보 중 고요한 값을 가져서 각 행마다 식별할 수 있는 의미를
+                가지는 칼럼
+         대리키 : 일련번호와 같은 가상의 값으로 기본 키의 역할을 하는 칼럼
        
    2.1 sakila schema
        영화 DVD 대여 체인점을 설계한 DB
@@ -173,7 +186,10 @@ show tables; => 23 rows
           having : 그룹핑된 결과에서 추가적으로 조건 적용
           order by : 정렬
           
-       
+       - MySQL 8.4 Reference Manual
+         https://dev.mysql.com/doc/refman/8.4/en/
+         
+         
        
        
 
