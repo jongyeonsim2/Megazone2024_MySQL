@@ -168,7 +168,7 @@ select c.first_name , c.last_name, count(*)
   from customer c 
    inner join rental r 
    on c.customer_id  = r.customer_id
-   order by 3 desc;
+   order by 3 desc; /* 3 은 select 절의 3 번째 열을 의미함 */
   
   
   
