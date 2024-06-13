@@ -298,5 +298,41 @@ select count(*)
  inner join address_vw2 addr
      on c.address_id = addr.address_id;
 
+    
+/* 
+ * 
+ * 프로젝트시 기능분석이 완료됨. ERD 가 어느정도 완성이 됨.
+ * 
+ * 각 기능별 예상 sql 을 작성.
+ * select 문장들 중에서 공통 부분을 추출한 후,
+ * View 가 될 대상들에 대해서 어떻게 구현할 건지를 고려.
+ * 
+ * function 대상, 트랜잭션과 관련된 SQL(select, update, insert, procedure)
+ * 트랜잭션과 관련된 SQL은 트랜잭션 처리에 부담없이 할 수 있을까?
+ * 
+ * 성능테스트 진행 후, scale in, scale out 범위 설정. => 시스템 아키텍처 고려.
+ * 
+ *   */
+    
+    
+    
+/* self join
+ * 
+ * 테이블 하나로 마치 두 개의 테이블처럼 사용해서 조인하는 경우.
+ * 
+ * emp table 의 사번과 관련된 칼럼이 empno, mgr 이 있고,
+ * mgr 칼럼은 자기 참조 외래키라고 명명함.
+ * 
+ * 상사 정보가 없는 사원 : 사장님 또는 회장님
+ * 
+ *  */
+    
+select * from emp;
+
+select * from emp where mgr = 7902; /* smith 사원 정보 */
+select * from emp where empno = 7902; /* smith 사원의 상사(ford) 정보 */
+
+select * from emp where job = 'PRESIDENT';
+    
 
  				
