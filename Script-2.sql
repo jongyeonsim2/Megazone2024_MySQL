@@ -335,4 +335,84 @@ select * from emp where empno = 7902; /* smith 사원의 상사(ford) 정보 */
 select * from emp where job = 'PRESIDENT';
     
 
+/* 사원과 그 사원의 상사 정보를 함께 조회되는 SQL 작성. */
+select count(*)
+  from emp
+ inner join emp mgr
+    on emp.empno = mgr.mgr; /* 13 rows */
+   
+select count(*)  from emp;  /* 14 rows */
+   
+/* 누락된 데이터까지 조회되도록 하려면, 어떻게 해야 할까? 
+ * 
+ * outer join(외부 조인) 을 사용.
+ * 
+ * 동일한 테이블 간의 조인 수행에서 어느 한쪽이 null 이어도,
+ * 강제로 출력하는 join 방식.
+ * 
+ * 왼쪽 외부 조인(left outer join) : 
+ * 왼쪽 열을 기준으로 오른쪽 열의 데이터 존재 여부에 상관없이 
+ * 출력하라는 의미
+ * 
+ * 
+ * */
+
+/* 한 쪽은 14건, 한 쪽은 13건. 
+ * 
+ * 차이가 나는 데이터를 어떻게 하면 알아낼 수 있을까?
+ * 
+ * 예로 현재 테이블의 row 수가 1,000,000,000 건이라면.....
+ * 
+ * 
+ * except ( 차집합 ) 연산자 사용의 제한
+ * => except 를 사용한 결과를 in 연산자와 함께 사용할 경우
+ *   제대로 된 결과를 예상할 수 없음.
+ *    MySQL 8.4 공식 문서에 except 연산 설명은 있으나,
+ *   다른 연산자와의 사용시 제한에 대한 설명은 없음.
+ * 
+ * 
+ **/   
+   
+select * from emp
+ where empno in (
+ 7839					 
+ );
+   
+select empno from emp   /* 14 건 */
+except /* 차집합 연산자 */
+select e1.empno
+  from emp e1 inner join emp e2
+   on ( e1.mgr = e2.empno );  /* 13 건 */
+   
+/* except 를 sub query 에서 사용해서 그 결과를
+ * in 연산자에서 사용하는 경우, 예상과 다른 결과가 나옴.
+ * => MySQL 8.4 공식 문서에서 이에 대한 설명이 현재는 없는 상태.
+ *  */ 
+select * from emp
+ where empno in (
+					select empno from emp   /* 14 건 */
+					except /* 차집합 연산자 */
+					select e1.empno
+					  from emp e1 inner join emp e2
+					   on ( e1.mgr = e2.empno )  /* 13 건 */				 
+ );
+   
+   
+   
+/* self join => 13 건, 사장님 누락됨.  */   
+select e1.empno, e1.ename, e1.mgr
+       ,e2.empno as mgr_emono, e2.ename as mgr_ename
+  from emp e1 inner join emp e2
+   on ( e1.mgr = e2.empno );
+   
+/* left outer join => 14 건, 사장님 포함됨. */   
+select e1.empno, e1.ename, e1.mgr
+       ,e2.empno as mgr_emono, e2.ename as mgr_ename
+  from emp e1 left outer join emp e2
+   on ( e1.mgr = e2.empno );
+
+
+
+
+
  				
