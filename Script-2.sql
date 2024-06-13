@@ -257,7 +257,46 @@ select count(*)
  * 
  * */
 
-select * from address;
+select count(*) from customer c ;  /* 고객수가 599임. */
+
+/* case 1 */
+select c.first_name , c.last_name , ct.city /* count(*) */
+  from customer c
+  inner join address a
+     on c.address_id = a.address_id
+  inner join city ct 
+     on a.city_id = ct.city_id;
+    
+    
+/* case 2 */
+select c.first_name, c.last_name, addr.address, addr.city  /* count(*) */ 
+  from customer c 
+ inner join (
+ 				select a.address_id, a.address, ct.city
+ 				  from address a 
+ 				 inner join city ct
+ 				    on a.city_id = ct.city_id
+ 			) addr
+     on c.address_id = addr.address_id;
+ 
+/* case 3 */
+create view address_vw2 as
+select a.address_id, a.address, ct.city
+ 				  from address a 
+ 				 inner join city ct
+ 				    on a.city_id = ct.city_id;
+ 				   
+select * from address_vw2;
+
+select c.first_name, c.last_name, addr.address, addr.city  /* count(*) */ 
+  from customer c 
+ inner join address_vw2 addr
+     on c.address_id = addr.address_id;
+
+select count(*)  
+  from customer c 
+ inner join address_vw2 addr
+     on c.address_id = addr.address_id;
 
 
  				
