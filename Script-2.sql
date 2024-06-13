@@ -148,8 +148,14 @@ INSERT INTO EMP VALUES
 INSERT INTO EMP VALUES
         (7902, 'FORD',   'ANALYST',   7566,
         '1981-12-03',  3000, NULL, 20);
+        
+        
+select count(*) from emp;  => 총 row 수 : 14 건 을 확인
+        
  * 
  * */
  
+ 
+
 
  				
