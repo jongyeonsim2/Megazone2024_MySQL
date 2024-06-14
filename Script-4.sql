@@ -117,3 +117,14 @@ select  extract(year_month from rental_date)  from rental r ;
 
 select count(*) from rental r ;
   
+/* 그룹필터 - 그룹핑 + 조건 검색 */
+select fa.actor_id , f.rating , count(*)
+  from film_actor fa 
+    inner join film f 
+      on fa.film_id = f.film_id 
+   where f.rating in ('G','PG') /* 등급 조건 설정 */
+   group by fa.actor_id , f.rating 
+   having count(*) > 9
+   order by 1,2;
+
+
