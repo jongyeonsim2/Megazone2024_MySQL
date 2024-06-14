@@ -146,5 +146,48 @@ select co.country, sum(p.amount)
 			 group by co.country ;
 
 
+/* 다중 열 서브쿼리 : 반환되는 결과가 다중 열인 서브쿼리 */
+			
+select actor_id, film_id
+  from film_actor
+ where ( actor_id, film_id ) in (
+ 									/* 카테시안 프러덕트 : cross join */
+ 									select a.actor_id, f.film_id
+ 									  from actor a 
+ 									    cross join film f 
+ 									 where a.last_name = 'MONROE'
+ 									   and f.rating = 'PG'
+ 								);
 
-
+ 							
+/* 상관 서브쿼리 
+ * 
+ * 메인 쿼리에서 사용한 데이터를 sub query 에서 사용하고 
+ * sub query 의 결과값을 다시 메인 쿼리로 반환하는 방식 => 성능이 낮음.
+ * => 비상관 서브쿼리에는 서브쿼리가 독립적으로 실행이 됨. 
+ * 
+ * */
+ 		
+/* 아래의 상관관계 sql 의 동작 순서 
+ * 
+ * 1. Main sql 에서 customer_id 를 모두 구함. 599 명의 고객의 ID를 조회.
+ * 2. customer_id 를 sub query에 제공. 
+ *    sub query 가 한 번씩 실행이되도록 customer_id 를 제공.
+ * 3. sub query 에서 제공받은 customer_id 로 실행.
+ * 4. sub query 의 결과를 Main query 로 반환
+ * 5. Main query 20 번 대여 횟수가 동일한지 확인.
+ * 
+ * */ 							
+select c.customer_id , c.first_name , c.last_name 
+  from customer c 
+ where 20 = (
+ 				select count(*) 
+ 				  from rental r 
+ 				 where r.customer_id = c.customer_id 
+ 			);
+ 		
+select count(*) from rental r where r.customer_id = 191;
+ 		
+ 							
+ 							
+ 							
