@@ -11,6 +11,11 @@ select customer_id, first_name , last_name
   from customer c 
  where customer_id = ( select Max(customer_id) from customer c2 );
  
+
+select /*+ INDEX_ASC(customer, customer_id ) */ customer_id
+  from customer c 
+limit 1;
+
 select Max(customer_id) from customer;
 
 select customer_id, first_name , last_name 
@@ -96,5 +101,50 @@ select first_name , last_name
  * 
  * payment, customer, address, city, country
  * 
- * */		
-  				
+ * */
+
+select customer_id, sum(amount)
+  from payment group by customer_id
+ having sum(amount) > ALL (
+			 select sum(p.amount)
+			  from payment p 
+			    inner join customer c 
+			      on p.customer_id = c.customer_id 
+			    inner join address a 
+			      on c.address_id = a.address_id 
+			    inner join city ct
+			      on a.city_id = ct.city_id 
+			    inner join country co
+			      on ct.country_id = co.country_id 
+			 where co.country in ('Bolivia','Paraguay','Chile')
+			 group by co.country 
+ 					)	;		
+ 					
+select customer_id, sum(amount)
+  from payment group by customer_id
+ having sum(amount) > 328.29;
+ 					
+
+ 	/* 'Bolivia' : 183.53, 'Paraguay' : 275.38, 'Chile' : 328.29  
+ 	 * 'Gambia' : 129.70, 'Greece' : 232.46
+ 	 * 
+ 	 * */
+ 					
+
+
+select co.country, sum(p.amount)
+			  from payment p 
+			    inner join customer c 
+			      on p.customer_id = c.customer_id 
+			    inner join address a 
+			      on c.address_id = a.address_id 
+			    inner join city ct
+			      on a.city_id = ct.city_id 
+			    inner join country co
+			      on ct.country_id = co.country_id 
+			 where co.country in ('Gambia','Greece')
+			 group by co.country ;
+
+
+
+
