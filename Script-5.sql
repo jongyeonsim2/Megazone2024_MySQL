@@ -177,6 +177,9 @@ select actor_id, film_id
  * 4. sub query 의 결과를 Main query 로 반환
  * 5. Main query 20 번 대여 횟수가 동일한지 확인.
  * 
+ * 따라서, 상관 sub query는 599(고객수) 번 실행되고, 
+ * query 를 실행할 때마다 지정된 고객의 총 대여횟수가 반환됨.
+ * 
  * */ 							
 select c.customer_id , c.first_name , c.last_name 
   from customer c 
@@ -188,6 +191,52 @@ select c.customer_id , c.first_name , c.last_name
  		
 select count(*) from rental r where r.customer_id = 191;
  		
- 							
- 							
+/* 상관관계 Query 를 사용해서  SQL 을 작성.
+ * 
+ * 대여 총 지불액이 180 달러에서 240 달러 사이인 모든 고객 리스트
+ *  */ 							
+
+select c.first_name, c.last_name 
+  from customer c 
+ where 
+   (
+   		select sum(p.amount)
+   		  from payment p 
+   		 where p.customer_id = c.customer_id 
+   )/* 상관관계 sub query 가 599 번 실행, 599 번 반환 */
+   between 180 and 240;
+
+/* exists 연산자 
+ * 
+ * exists 연산자 다음에 sub query 가 위치하고,
+ * 그 sub query 의 결과가 row 수에 관계없이 
+ * 결과 존재 자체만 확인하고자 하는 경우에 사용.
+ * 
+ * */
+
+/* 2005-05-25 일 이전에 한 편 이상의 영화를 대여한 모든 고객  */
+select c.customer_id , c.first_name , c.last_name 
+  from customer c 
+ where exists 
+    (
+    	select 1 /*  */
+    	  from rental r 
+    	 where r.customer_id = c.customer_id 
+    	   and date(r.rental_date) < '2005-05-25'
+    );
+    
+  
+select r.rental_id 
+  from rental r 
+ where r.customer_id = 130
+   and date(r.rental_date) < '2005-05-25';
+  
+  
+  
+  
+  
+  
+  
+  
+  
  							
