@@ -587,12 +587,20 @@ SELECT ones.num + tens.num + hundreds.num
  (SELECT 0 num UNION ALL
  SELECT 100 num UNION ALL
  SELECT 200 num UNION ALL
- SELECT 300 num) hundreds;
+ SELECT 300 num) hundreds
+order by 1;
     
 /*
+ * DATE_ADD(), INTERVAL()
  * 
- * 
- * 
+ * 생성되는 날짜 범위 : 2020-01-01 ~ 2020-12-31
  */    
     
     
+
+/* 상기의 달력을 만든 후,
+ * rental table 의 대여일 별로 대여수 조회.
+ * 단, 검색 기간은 2005 년도에 대해서만 조회.
+ * 
+ */
+select * from rental;
