@@ -7,7 +7,7 @@
  *    1.1 위치
  *       데이터베이스의 공유 메모리 내에 존재
  *    1.2 용도
- *       DB서버프로세서가 SQL클라이언트의 select 요청에 대한 데이터가 메모리에
+ *       DB서버프로세스가 SQL클라이언트의 select 요청에 대한 데이터가 메모리에
  *       없는 경우 속도가 느린 디스크에서 읽어올 수 밖에 없으므로 그만큼
  *       SQL의 처리가 느려지게 됨. ( DISK I/O 가 발생함으로 속도가 느려지게 됨. )
  * 
@@ -21,13 +21,13 @@
  * 
  * 2. 딕셔너리 캐시, 라이브러리 캐시 ( 참고, SQL 성능이라는 부분이 이런 거구나... )
  *    2.1 위치
- *       데이터베이스의 고유 메모리 내에 존재
+ *       데이터베이스의 공유 메모리 내에 존재
  *    2.2 용도
  *       딕셔너리 캐시는 주로 SQL 의 실행에 필요한 메타 정보를 보관함.
  *       라이브러리 캐시는 실행 계획 등의 SQL 정보가 저장됨.
  * 
  *       SQL 문에는 구체적인 처리방법이 적혀 있지 않기 때문에 데이터베이스가
- *       처리 방법(실행 계획)을 스스로 생성해야할 필요가 없음. 따라서,
+ *       처리 방법(실행 계획)을 스스로 생성해야할 필요가 있음. 따라서,
  *       실행 계획의 좋고 나쁨에 따라 성능이 크게 변할 수 있음.
  *       ( Oracle 기준 : rule based, cost based
  *         10 버전 부터는 cost based 만 있음. 어떤 경로를 타면 저비용으로 탐색이 되나?
@@ -303,14 +303,65 @@ select r.rental_id
  * 상관관계 SUB QUERY 사용.
  * R 등급 영화에 출연한 적이 한 번도 없는 모든 배우명을 검색.
  * 
+ * - 영화 배우 한 명만을 생각해보는 것으로 논리적으로 생각해봄.
+ *   A 영화배우, 10편에 출연. => 10편 영화가 R 등급 영화에 출연 여부.
+ * 
+ *   Main                    Sub
+ *   
+ *   영화배우 테이블에 영화배우가 100명이라면, 위의 처리 방법을 100 번 수행.
+ * 
+ *   => 상관관계 쿼리
+ *      Main query에서 조회된 데이터를 Sub Query에서 조건 사용하고,
+ *     Sub Query 결과를 Main query 로 반환.
+ * 
+ * 
+ * 지금 예제는 상관관계를 사용하면 좋은 경우.
+ * 
  * */  
+select a.first_name, a.last_name
+  from actor a /* 배우 데이터를 Sub Query의 검색조건으로 사용. */
+ where not exists /* Sub Query 로 R 등급으로 조회 */
+ (
+ 	select 1
+ 	  from film_actor fa 
+ 	 inner join film f on f.film_id = fa.film_id
+ 	 where fa.actor_id = a.actor_id /* Main query 의 데이터 */
+ 	   and f.rating = 'R'
+ );
   
+        
+
+        
   
 /*
  * SUB QUERY 사용.
- * 고개별 고객정보(first_name, last_name), 대여횟수, 대여결체총액 을 조회.
+ * 고객별 고객정보(first_name, last_name), 대여횟수, 대여결체총액 을 조회.
+ * 
+ * 고객별 고객정보(first_name, last_name) : 고객 정보. => 고객 정보 전용 SQL
+ * 대여횟수, 대여결체총액 : 대여 정보. => 대여 정보 전용 SQL
+ * 
+ * 향후에 함수 또는 프로시저 (function, procedure 등)  가 될 후보군이 보이게 됨. 
+ * 
+ * inner join 문에 사용되는 SUB QUERY
+ * 대여횟수, 대여결체총액 는 집계 함수
+ * 
  */
-  
+select c.first_name , c.last_name , 
+		payInfo.rentals_cnt, payInfo.payments_tot
+  from customer c  /*  고객정보 전용  */
+    inner join
+      (
+      	 select customer_id , count(*) rentals_cnt,
+      	 		sum(amount) payments_tot
+      	   from payment p 
+      	  group by customer_id 
+      ) payInfo /* 대여 정보 전용 SQL */
+     on c.customer_id = payInfo.customer_id;
+
+
+
+
+
   
 /* 난이도가 있음.
  * 대여 결제 총액 기준으로 크게 3개 그룹의 고객을 분류
@@ -318,10 +369,59 @@ select r.rental_id
  * 중간 결제 고객 : 75 ~ 149.99
  * 높은 결제 고객 : 150 ~ 9,999,999.99
  * 
+ * 고객 정보 테이블
+ * 
+ * 결제 기준 분류 테이블
+ * 낮은 결제 고객 : 0(low_limit) ~ 74.99(high_limit)
+ * 중간 결제 고객 : 75(low_limit) ~ 149.99(high_limit)
+ * 높은 결제 고객 : 150(low_limit) ~ 9,999,999.99(high_limit)
+ * 
+ * 
+ * => 분류 테이블 처럼 생각해야 함. 하지만, 실제 테이블이 아님.
+ *    => 마치 테이블 처럼 되도록만 하면, 관계만 맺어주게 되면 해결.
+ *       => 마스트 코드 및 분류 테이블이 될 후보군이 보이게 됨.
+ * 
  * 상기의 기준으로 해당 그룹에 속하는 고객수를 조회.
  */
   
-  
+/* 1. 논리적인 테이블이 되도록 해야 함. */
+
+select 1, 'ABC'    
+union all    
+select 2, 'DEF'
+union all
+select 3, 'GHI';
+
+select 'small', 0 low_limit, 74.99 high_limit
+union all
+select 'average', 75 low_limit, 149.99 high_limit
+union all
+select 'heavy', 150 low_limit, 9999999.99 high_limit;
+
+/* 논리적인 테이블과의 관계를 설정
+ * 논리적인 테이블이 inner join 에 들어가고,
+ * 관계를 맺어주면 됨.
+ *  */
+select payGroupInfo.name, count(*) num_cus
+  from 
+      (
+      	 select customer_id , count(*) rentals_cnt,
+      	 		sum(amount) payments_tot
+      	   from payment p 
+      	  group by customer_id 
+      ) payInfo  /* 고객 정보 + 결제 정보 */
+    inner join 
+		(
+			select 'small' name, 0 low_limit, 74.99 high_limit
+			union all
+			select 'average' name, 75 low_limit, 149.99 high_limit
+			union all
+			select 'heavy' name, 150 low_limit, 9999999.99 high_limit
+		) payGroupInfo /* 결제 분류 논리 테이블 */   
+    on payInfo.payments_tot between  low_limit  and high_limit
+    group by payGroupInfo.name;
+
+
 /* SQL을 작성하되, 가독성 높은 SQL 로 작성할 것.
  * 
  * 고객정보(first, last name, 도시명), 총 대여 지불 금액, 총 대여 횟수
