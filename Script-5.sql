@@ -398,7 +398,9 @@ select 'average', 75 low_limit, 149.99 high_limit
 union all
 select 'heavy', 150 low_limit, 9999999.99 high_limit;
 
-/* 논리적인 테이블과의 관계를 설정
+/* 2.
+ * 
+ * 논리적인 테이블과의 관계를 설정
  * 논리적인 테이블이 inner join 에 들어가고,
  * 관계를 맺어주면 됨.
  *  */
@@ -427,11 +429,85 @@ select payGroupInfo.name, count(*) num_cus
  * 고객정보(first, last name, 도시명), 총 대여 지불 금액, 총 대여 횟수
  * 를 조회하는 SQL을 작성.
  *  */
+
+/* 공통화 작업을 하진 않은 SQL
+ * 
+ * : 조회를 table 을 기준으로만 직접 조인해서 사용
+ * 
+ * 
+ * 테이블 간의 조인의 목적성이 잘 보이지 않음.
+ * 따라서, 코드를 좀 읽어서, 분석이 필요.
+ * 
+ * 통계적인 정보의 조회를 위해서 테이블간의 조인 부분을 공통화하면 어떨까?
+ *  */   
+select c.first_name , c.last_name , ct.city ,
+		sum(p.amount) pay_tot , count(*) rental_tot_cnt
+  from payment p 
+ inner join customer c 
+    on p.customer_id = c.customer_id 
+ inner join address a 
+    on c.address_id = a.address_id 
+ inner join city ct
+    on a.city_id = ct.city_id 
+ group by c.first_name , c.last_name , ct.city ;
+   
+
+/* 통계 정보 기능만 별도의 SQL 로 작성 : 공통화 작업 */
+select customer_id , 
+		sum(p.amount) pay_tot , count(*) rental_tot_cnt
+  from payment p 
+ group by customer_id ;
+
+
+   
+/*
+ * 공통화 작업을 한 SQL
+ * : Sub Query 를 작성해서 다시 조인해서 사용.
+ * 
+ */   
+select c.first_name , c.last_name , ct.city ,
+		payInfo.pay_tot , payInfo.rental_tot_cnt
+  from (
+		select customer_id , 
+				sum(p.amount) pay_tot , count(*) rental_tot_cnt
+		  from payment p 
+		 group by customer_id /* view 의 후보군 */
+  ) payInfo
+ inner join customer c 
+    on payInfo.customer_id = c.customer_id 
+ inner join address a 
+    on c.address_id = a.address_id 
+ inner join city ct
+    on a.city_id = ct.city_id ;
   
   
-  
-  
-  
+/* 공통 테이블 표현식 : CTE, with 절 
+ * CTE : Common Table Expression
+ * 
+ * 서브쿼리가 몇 십줄씩 되는 경우( 서브쿼리의 규모가 큰 경우 )
+ * 실제 수행해야 할 Main Query 와 Sub Query를 구분할때 유용함.
+ * */
+   
+   
+   
+/* 성이 'S'로 시작하는 배우가 출연하는 PG 등급 영화 대여로 발생한
+ * 총 수익(대여료)을 조회 
+ * 
+ * 영화 배우명(first_name, last_name), 총 수익 으로 조회.
+ * */
+   
+   
+/* 영화 배우를 조회. 영화 배우 ID, 영화 배우명(first_name, last_name) 
+ * 
+ * 단, 정렬 조건은 영화 배우가 출연한 영화수로 내림차순 정렬이 되도록 하고,
+ * 정렬 조건을 Sub Query로 작성할 것.
+ * */
+   
+/* 대여 가능한 DVD 영화 리스트를 조회.
+ * film id, 제목, 재고수 가 조회도록 SQL 작성. 
+ * 
+ * 단, 모든 영화가 빠짐없이 조회가 되도록 해야 함.
+ * */
   
   
   
