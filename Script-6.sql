@@ -33,7 +33,30 @@ select first_name , last_name ,
  * 
  * first_name, last_name, 대여횟수 로 출력이 되도록 함.
  * 단,  case 표현식을 사용.
+ * 
+ * 사용 테이블 : customer, rental
+ * 대여 횟수 계산 : active = 0, 0 으로 출력
+ *               active = 1, retal table 상관관계 조건 => 대여횟수
+ * Main query : customer table 지정.
+ * Sub query  : 스칼라 sub query 내에 대여 횟수 계산 처리
+ * 
  * */
+ 
+ select c.first_name, c.last_name,
+ 	case 
+ 		when active = 0 then 0
+ 		else
+ 		    (
+ 		    	select count(*)
+ 		    	  from rental r 
+ 		    	 where r.customer_id = c.customer_id
+ 		    )
+ 	end tot_rental_cnt
+   from customer c ;
+ 
+ 
+ 
+ 
  
  
  /*
