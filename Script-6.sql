@@ -127,10 +127,23 @@ select first_name , last_name ,
   *   - 여유 : 재고수량 3 or 4
   *   - 충분 : 재고수량 5 이상
   * 
+  * 
+  * 사용 테이블 : film, inventory
+  * 
+  * 분류 기준 정보는 테이블의 칼럼처럼 출력되도록 해야함. => 스칼라 sub query
+  * 
+  * 스칼라 sub query 에서 case ... when ... 하면 되지 않을까???
+  * 
+  * Main Query : film
+  * 스칼라 sub query : inventory
+  * 
   */
  
- 
-
+  /* 문제 sql */
+ select
+   from film f 
+  
+  /* 검증용 sql */
 
 
 
