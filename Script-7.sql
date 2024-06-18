@@ -34,7 +34,30 @@
  * 이메일 주소 마킹처리된 예 : MA*****.org
  * 
  *                        MAster0001.org
+ * 
+ * 문자열 처리 : substr()
  * */
+SELECT concat(
+		substr('MAster0001.org', 1, 2), 
+		'******', 
+		substr('MAster0001.org', -4) );
+	
+create view customer_vw
+( customer_id, first_name, last_name, email )
+as
+select customer_id, first_name, last_name, 
+		concat(
+			substr(email, 1, 2), 
+			'******', 
+			substr(email, -4) ) email
+  from customer c ;
+ 
+select * from customer_vw;
+
+drop view customer_vw;
+
+
+ 
 
 
 
@@ -52,7 +75,10 @@
 
 
 
-
+/*
+ * 영화 카테고리별 총 대여량을 조회하는 View 를 생성.
+ * 
+ * */
 
 
 
