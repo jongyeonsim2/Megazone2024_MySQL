@@ -68,8 +68,53 @@ select first_name , last_name ,
   * 그리고, case 표현식을 사용하지 않은 경우 결과는 3행으로 출력되도록 하고,
   * case 표현식을 사용한 경우는 1행으로 5월, 6월, 7월 의 월별 영화 대여 횟수가 출력이 되도록 함.
   * 
+  * 1. case 표현식을 사용하지 않은 경우
+  * 2. case 표현식을 사용한 경우
   */
  
+  /* 1. 
+   *    결과각 3 rows 임.
+   *    2번에서 1 rows 가 되도록...
+   * */ 
+  select monthname(rental_date), count(*) 
+    from rental r 
+   where rental_date between '2005-05-01' and '2005-08-01'
+   group by monthname(rental_date); 
+  
+  /* 2. */
+  /* 1단계 : 5월, 6월, 7월 에 대한 각 한건에 대한 대여정보*/
+  select monthname(rental_date), 1
+    from rental r 
+   where rental_date between '2005-05-01' and '2005-08-01' ;
+  
+  /* 2단계 : 5월에 대한 대여정보만 sum이 되도록 */
+  select 
+    sum((
+    	case when monthname(rental_date) = 'May' then 1 else 0 end) 
+    ) may_rental
+    from rental
+   where rental_date between '2005-05-01' and '2005-08-01';
+  
+  /* 2단계 검증 : 5월 대여정보 row 수 : 1156 건 */
+  select count(*)
+    from rental r 
+   where rental_date between '2005-05-01' and '2005-06-01';
+  
+  /* 3단계 : 6월, 7월 추가 */
+  select 
+    sum((
+    	case when monthname(rental_date) = 'May' then 1 else 0 end) 
+    ) may_rental,
+    sum((
+    	case when monthname(rental_date) = 'June' then 1 else 0 end) 
+    ) june_rental,
+    sum((
+    	case when monthname(rental_date) = 'July' then 1 else 0 end) 
+    ) july_rental
+    from rental
+   where rental_date between '2005-05-01' and '2005-08-01';
+  
+  
  
  /*
   * 영화의 재고 수량에 따라 품절, 부족, 여유, 충분 으로 분류되어 출력이 되도록 SQL 을 작성.
