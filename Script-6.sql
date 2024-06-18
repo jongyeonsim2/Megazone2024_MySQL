@@ -138,12 +138,40 @@ select first_name , last_name ,
   * 스칼라 sub query : inventory
   * 
   */
- 
-  /* 문제 sql */
- select
-   from film f 
   
-  /* 검증용 sql */
+  
+  /* 문제 sql */
+  select f.title,
+  	case (
+  			select count(*)
+  			  from inventory i 
+  			 where i.film_id = f.film_id 
+  		)
+  		when 0 then '품절'
+  		when 1 then '부족'
+  		when 2 then '부족'
+  		when 3 then '여유'
+  		when 4 then '여유'
+  		else '충분'
+  	end film_inventory
+    from film f ;
+   /*where f.film_id  in (6, 15); 검증용 SQL 조건임.  */
+  
+  /* 검증용 sql 
+   * 
+   * 검증용 데이터
+   *   - 재고가 1인 경우 : 없음
+   *   - 재고가 2인 경우 : 29, 30 => '부족' => OK
+   *   - 재고가 3인 경우 : 2, 5 => '여유' => OK
+   *   - 재고가 4인 경우 : 3, 8 => '여유' => OK
+   *   - 재고가 5인 경우 : 7, 9 => '충분' => OK
+   *   - 재고가 6인 경우 : 6, 15 => '충분' => OK
+   * 
+   * */
 
+   select film_id , count(*)
+     from inventory i 
+    group by film_id 
+    having count(*) = 1;
 
 
