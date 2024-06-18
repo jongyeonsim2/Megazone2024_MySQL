@@ -64,13 +64,21 @@ drop view customer_vw;
 
 
 /*
+ * 목적 : 복잡성 낮추는 것임.
+ * 
  * 각 영화 정보에 대해서 
  * film_id, title, description, rating 가 출력이 되고,
  * 추가적으로 각 영화에 대한 영화 카테고리, 영화 출연 배우의 수,
  * 총 재고수, 각 영화의 대여횟수가 조회되도록 view 를 생성.
  * 
+ * film 의 기본 칼럼을 제외하고 나머지 4개의 데이터는 스칼라 sub query 임.
+ * 그리고, 스칼라 sub query 연관 관계의 조건 설정이 필요.
+ * 
  * */
 
+select f.film_id, f.title, f.description, f.rating,
+  (), (), (), ()
+  from film f ;
 
 
 
