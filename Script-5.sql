@@ -540,15 +540,99 @@ WITH actors_s AS
  * 단, 정렬 조건은 영화 배우가 출연한 영화수로 내림차순 정렬이 되도록 하고,
  * 정렬 조건을 Sub Query로 작성할 것.
  * */
-   
-   
+    
+select a.actor_id, a.first_name, a.last_name
+  from actor a 
+ order by (
+ 	select count(*)
+ 	  from film_actor fa 
+ 	 where fa.actor_id = a.actor_id /* 연관 관계 sub query */
+ ) desc;
+ 
+ 
+/* 스칼라 스브쿼리 
+ * 
+ * select 절에 사용하는 sub query
+ * - 칼럼의 형태 => 하나의 열로 사용할 수 있도록 해야 함.
+ * - 반드시 하나의 결과만 반환되도록 해야 함. => 연관 관계임을 나타냄.
+ * - Main query 의 from 절 다음에 inner join 절이 없어도 됨.
+ * 
+ * 
+ * 아래의 SQL 을 스칼라 sub query 로 변경해보세요.
+ * 
+ * 
+ * select c.first_name , c.last_name , ct.city ,
+		payInfo.pay_tot , payInfo.rental_tot_cnt
+  from (
+		select customer_id , 
+				sum(p.amount) pay_tot , count(*) rental_tot_cnt
+		  from payment p 
+		 group by customer_id 
+  ) payInfo
+ inner join customer c 
+    on payInfo.customer_id = c.customer_id 
+ inner join address a 
+    on c.address_id = a.address_id 
+ inner join city ct
+    on a.city_id = ct.city_id ;
+ * 
+ * 
+ * 1. Main Query 의 from 절에 사용할 테이블 결정
+ *    paymnet : 한 번이라도 결제한 고객이 대상
+ * 2. first_name : sub query + 조건( 연관관계 : payment )
+ * 3. last_name : sub query + 조건( 연관관계 : payment )
+ * 4. city 
+ *    sub query ( customer, address, city ) + 조건( 연관관계 : payment )
+ * 5. 총 결제 금액, 총 대여 횟수 
+ *    Main Query 의 from table 을 이용해서 집계함수로 통계 처리
+ * 6. Main Query 에 group by 적용.
+ * */
+
+select 
+		(
+			select c.first_name
+			  from customer c 
+			 where c.customer_id = p.customer_id 
+		) first_name,
+		(
+			select c.last_name
+			  from customer c 
+			 where c.customer_id = p.customer_id 
+		) last_name,
+		(
+			select ct.city
+			  from customer c 
+			 inner join address a 
+			    on c.address_id = a.address_id
+			 inner join city ct
+			    on a.city_id = ct.city_id
+			 where c.customer_id = p.customer_id 
+		) city,
+		sum(p.amount) tot_pay,
+		count(*) tot_pay_cnt
+  from payment p 
+ group by p.customer_id ;
+
+
    
 /* 대여 가능한 DVD 영화 리스트를 조회.
  * film id, 제목, 재고수 가 조회도록 SQL 작성. 
  * 
  * 단, 모든 영화가 빠짐없이 조회가 되도록 해야 함.
+ * => film 에는 데이터가 있지만, 
+ *    inventory 에는 데이터가 없는 경우. => outer join
  * */
-  
+
+/* count() 의 값이 null 이면, 0 으로 처리함. */
+select f.film_id , f.title , count(i.inventory_id)
+  from film f 
+    left outer join inventory i 
+    on f.film_id  = i.film_id 
+  group by f.film_id , f.title;
+
+/* film_id = 14 인 데이터는 inventory 에 존재하지 않음. */
+select * from inventory i where film_id = 14;
+
    
    
 /* 대여 가능한 DVD 영화 리스트를 조회.
@@ -556,10 +640,24 @@ WITH actors_s AS
  * 
  * 단, 모든 영화가 빠짐없이 조회가 되도록 해야 하고,
  *   film id 는 13, 14, 15 로 한정. 
+ * 
+ * => 필요한 테이블 : film, inventory, rental
+ * => film 정보가 inventory 뿐만이 아니라, rental 에도 없는 경우 가 있음.
+ *    이런경우의 join 은? 
+ * 
  * */
-  
- 		
-/* 0 ~ 399 */    
+select f.film_id , f.title , i.inventory_id ,r.rental_date 
+  from film f 
+  left outer join inventory i /* film 테이블 기준 : left */
+    on f.film_id = i.film_id 
+  left outer join rental r /* inventory 테이블 기준 : left */
+    on i.inventory_id  = r.inventory_id 
+ where f.film_id between 13 and 14;
+
+
+
+/* cross join(교차 조인) : 카테시안 프로덕트, 임시 테스트용 데이터 생성  */ 		
+/* 0 ~ 399 => DATE_ADD() , interval 용 데이터( DAY, MONTH, YEAY ) */    
 SELECT ones.num + tens.num + hundreds.num
  FROM
  (SELECT 0 num UNION ALL
@@ -594,13 +692,54 @@ order by 1;
  * DATE_ADD(), INTERVAL()
  * 
  * 생성되는 날짜 범위 : 2020-01-01 ~ 2020-12-31
+ * 
+ * 칼렌더 테이블이 완성.
  */    
-    
+select date_add('2020-01-01', 
+		interval(ones.num + tens.num + hundreds.num) day) dt
+  from
+ (SELECT 0 num UNION ALL
+ SELECT 1 num UNION ALL
+ SELECT 2 num UNION ALL
+ SELECT 3 num UNION ALL
+ SELECT 4 num UNION ALL
+ SELECT 5 num UNION ALL
+ SELECT 6 num UNION ALL
+ SELECT 7 num UNION ALL
+ SELECT 8 num UNION ALL
+ SELECT 9 num) ones
+ CROSS JOIN
+ (SELECT 0 num UNION ALL
+ SELECT 10 num UNION ALL
+ SELECT 20 num UNION ALL
+ SELECT 30 num UNION ALL
+ SELECT 40 num UNION ALL
+ SELECT 50 num UNION ALL
+ SELECT 60 num UNION ALL
+ SELECT 70 num UNION ALL
+ SELECT 80 num UNION ALL
+ SELECT 90 num) tens
+ CROSS JOIN
+ (SELECT 0 num UNION ALL
+ SELECT 100 num UNION ALL
+ SELECT 200 num UNION ALL
+ SELECT 300 num) hundreds
+ where date_add('2020-01-01', 
+ 	interval(ones.num + tens.num + hundreds.num) day) < '2021-01-01'
+ order by 1; 
+
     
 
 /* 상기의 달력을 만든 후,
- * rental table 의 대여일 별로 대여수 조회.
+ * rental table 의 대여일 별로 대여회수 조회.
  * 단, 검색 기간은 2005 년도에 대해서만 조회.
+ * 
+ * Main query : rental table (  왼쪽  )
+ * sub query  : 달력 table ( 오른쪽 )
+ * 
+ * 두 테이블의 관계 : 달력의 데이터가 rental table 에는 없을 수 있음.
+ * 					right outer join
+ * 
  * 
  */
 select * from rental;
