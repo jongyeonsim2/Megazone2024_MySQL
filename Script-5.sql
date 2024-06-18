@@ -739,7 +739,56 @@ select date_add('2020-01-01',
  * 
  * 두 테이블의 관계 : 달력의 데이터가 rental table 에는 없을 수 있음.
  * 					right outer join
- * 
- * 
  */
-select * from rental;
+
+desc rental ; /* rental_date 의 형식은 datetime 
+				 그래서, rental_date 을 date 형식으로...
+**/
+
+select rental_date, date(rental_date) from rental r ;
+
+
+select calendar.dt, count(r.rental_id) tot_day_rental_cnt
+  from rental r
+ right outer join
+  (
+		select date_add('2005-01-01', 
+				interval(ones.num + tens.num + hundreds.num) day) dt
+		  from
+		 (SELECT 0 num UNION ALL
+		 SELECT 1 num UNION ALL
+		 SELECT 2 num UNION ALL
+		 SELECT 3 num UNION ALL
+		 SELECT 4 num UNION ALL
+		 SELECT 5 num UNION ALL
+		 SELECT 6 num UNION ALL
+		 SELECT 7 num UNION ALL
+		 SELECT 8 num UNION ALL
+		 SELECT 9 num) ones
+		 CROSS JOIN
+		 (SELECT 0 num UNION ALL
+		 SELECT 10 num UNION ALL
+		 SELECT 20 num UNION ALL
+		 SELECT 30 num UNION ALL
+		 SELECT 40 num UNION ALL
+		 SELECT 50 num UNION ALL
+		 SELECT 60 num UNION ALL
+		 SELECT 70 num UNION ALL
+		 SELECT 80 num UNION ALL
+		 SELECT 90 num) tens
+		 CROSS JOIN
+		 (SELECT 0 num UNION ALL
+		 SELECT 100 num UNION ALL
+		 SELECT 200 num UNION ALL
+		 SELECT 300 num) hundreds
+		 where date_add('2005-01-01', 
+		 	interval(ones.num + tens.num + hundreds.num) day) < '2006-01-01'
+  ) calendar
+  on calendar.dt = date(r.rental_date)
+ group by calendar.dt
+ order by 1;
+
+
+
+
+
