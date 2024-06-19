@@ -193,6 +193,19 @@ select @outValue;
 
 drop procedure if exists ifElseProc;
 
+create procedure ifElseProc(in userName varchar(10))
+begin
+	declare address varchar(8); -- 프로시저의 지역변수
+	
+	select addr into address from usertbl
+	 where name = userName;
+	
+	if (address = '서울' or address = '경기') then 
+		select '수도권 거주';
+	else
+		select '지방 거주';
+	end if;
+end;
 
 
 
