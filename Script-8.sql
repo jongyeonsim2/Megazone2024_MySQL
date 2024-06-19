@@ -140,12 +140,49 @@ end;
 call userProc1('은지효'); 
 
 
-/* ============ in 매개변수가 하나가 있는 프로시저 ============ */
+/* ============ in 매개변수가 두 개가 있는 프로시저 ============ */
+
+drop procedure if exists userProc2;
+
+create procedure userProc2( in userBirthYear int,
+							in userHeight int )
+begin
+	select * from usertbl 
+	 where birthYear > userBirthYear
+	   and height > userHeight;
+end;
+
+call userProc2(1970, 178); 
 
 
+/* ============ in, out 매개변수가 두 개가 있는 프로시저 ============ */
 
+drop procedure if exists userProc3;
 
+create table if not exists testtbl 
+(
+	id int auto_increment primary key,
+	txt varchar(10)
+);
 
+create procedure userProc3 (	in textValue varchar(10),
+								out outValue int
+							)
+begin
+	insert into testtbl values(null, textValue);
+	select max(id) into outValue from testtbl;
+end;
 
+call userProc3 ('테스트값', @outValue);
+
+select * from testtbl t ;
+
+select @outValue;
+
+call userProc3 ('테스트값2', @outValue);
+
+select * from testtbl t ;
+
+select @outValue;
 
 
