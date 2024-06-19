@@ -115,9 +115,31 @@ select f.film_id, f.title, f.description, f.rating,
 
 
 /*
- * 영화 카테고리별 총 대여량을 조회하는 View 를 생성.
+ * 영화 카테고리별 총 대여금액을 조회하는 View 를 생성.
+ * 
+ * 영화 제작시 발생하는 투자금에 대한 ROI 를 높이고, 안정적이고 지속적이고 높은 ROI 확보하기 위한
+ * 정보를 가공.
+ * 
+ * 담당하는 개발자는 도메인 지식이 높아야 하고, 정확한 분석, 사용자를 배려한 SQL 작성.
+ * - 유지보수성, 안정성, 가독성 등등
+ * 
+ * 
+ * 필요한 정보 : 영화 카테고리명( category.name ), 총 대여금액( sum(payment.amount) )
+ * 필요한 테이블 : payment, rental, inventory, film, film_category, category 
+ * 
  * 
  * */
+
+select c.name category_name, sum(p.amount) tot_retal_amount
+  from payment p 
+ inner join rental r on p.rental_id = r.rental_id
+ inner join inventory i on r.inventory_id = i.inventory_id 
+ inner join film f on i.film_id = f.film_id 
+ inner join film_category fc on f.film_id = fc.film_id 
+ inner join category c on fc.category_id = c.category_id 
+ group by c.name 
+ order by tot_retal_amount desc;
+
 
 
 
