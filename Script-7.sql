@@ -76,8 +76,20 @@ drop view customer_vw;
  * 
  * */
 
+/*
+ *  공통화 작업, 가독성 높이고, 유지보수 향상이 되도록 => 스칼라 sub query
+ * */
 select f.film_id, f.title, f.description, f.rating,
-  (), (), (), ()
+  (
+  	select c.name
+  	  from category c 
+  	 inner join film_category fc 
+  	    on c.category_id = fc.category_id -- 일반적인 inner join, 결과 : multi rows
+  	 where fc.film_id = f.film_id	-- 상관관계, 결과 : single row
+  ), -- 영화에 대한 영화 카테고리 정보
+  (
+  	
+  ) -- 영화 출연 배우의 수
   from film f ;
 
 
