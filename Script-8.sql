@@ -577,8 +577,17 @@ select * from backup_usertbl  where userId = 'AAB';
 
 
 
+/* 비즈니스 프로세스 단계 처리용 trigger
+ * 
+ * 주문(orderTbl) -> 재고 계산(prodTbl) -> 배송(deliverTbl)
+ * 
+ * insert        ->  update          -> insert
+ * 
+ *  */
 
+-- 재고 테이블에 테스트용 데이터 등록
+insert into prodTbl values('사과', 100);
+insert into prodTbl values('배', 100);
+insert into prodTbl values('귤', 100);
 
-
-
-
+insert into orderTbl values (null, 'cus1', '배', 5);
