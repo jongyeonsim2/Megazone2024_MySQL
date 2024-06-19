@@ -79,6 +79,8 @@ drop view customer_vw;
 /*
  *  공통화 작업, 가독성 높이고, 유지보수 향상이 되도록 => 스칼라 sub query
  * */
+create view film_total_info
+as
 select f.film_id, f.title, f.description, f.rating,
   (
   	select c.name
@@ -86,11 +88,28 @@ select f.film_id, f.title, f.description, f.rating,
   	 inner join film_category fc 
   	    on c.category_id = fc.category_id -- 일반적인 inner join, 결과 : multi rows
   	 where fc.film_id = f.film_id	-- 상관관계, 결과 : single row
-  ), -- 영화에 대한 영화 카테고리 정보
+  ) category_info, -- 영화에 대한 영화 카테고리 정보
   (
-  	
-  ) -- 영화 출연 배우의 수
+  	select count(*)
+  	  from film_actor fa 
+  	 where fa.film_id = f.film_id 
+  ) actor_cnt, -- 영화 출연 배우의 수
+  (
+  	select count(*)
+  	  from inventory i 
+  	 where i.film_id = f.film_id 
+  ) inventory_cnt, -- 총 재고수
+  (
+  	select count(*)
+  	  from inventory i 
+  	 inner join rental r 
+  	    on i.inventory_id = r.inventory_id
+  	 where i.film_id = f.film_id 
+  ) rental_cnt -- 영화의 대여횟수
   from film f ;
+
+
+ select * from film_total_info;
 
 
 
