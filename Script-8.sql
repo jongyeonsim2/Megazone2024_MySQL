@@ -402,10 +402,32 @@ select userID , name, getAgeFunc(u.birthYear) as '현재 나이'
 
 
 
-/* ==================== Trigger ==================== */
+/* ==================== Trigger ==================== 
+ * 
+ * 개요
+ *    테이블에 insert, update, delete 작업(event)이 발생할 때
+ *    자동으로 작동되는 객체임.
+ * 
+ *    테이블에 부착되는 이벤트 프로그램 코드라고 생각하면 됨.
+ * 
+ * 대표적 용도
+ *    - 백업용
+ *      삭제할 경우 원본 데이터를 보관해야 하는 경우.
+ *    - 모니터링용
+ *      급여 테이블이 수정이 발생한 경우 전후 데이터에 대한 이력을 확인하기 위함.
+ *    - 비즈니스 프로세스 처리 단계용
+ *      구입 -> 재고 계산 -> 배송 하나의 비즈니스 프로세스로 동작시키기 위함.
+ * 
+ * 형식
+ *    - trigger time : 이벤트 발생 전 또는 발생 후
+ *    - event : insert, update, delete
+ *    - data 지시자 : old( event 발생 전 ), new( event 발생 후 ) 
+ * 
+ * */
 
  drop table if exists backup_userTbl;
- 
+
+/* Trigger 실습용 */
 CREATE TABLE backup_userTbl
 ( userID  varchar(8) NOT NULL, 
   name    varchar(10) NOT NULL, 
@@ -419,6 +441,7 @@ CREATE TABLE backup_userTbl
   modDate  date, -- 변경된 날짜
   modUser  varchar(256) -- 변경한 사용자
 );
+
 
 /* 비즈니스 프로세스 단계 처리용 */
 CREATE TABLE orderTbl -- 구매 테이블
@@ -436,48 +459,67 @@ CREATE TABLE deliverTbl -- 배송 테이블
 	  prodName VARCHAR(5), -- 배송할 물건		  
 	  account INT UNIQUE); -- 배송할 물건개수
 
+	  
+	  
+/* 고객 정보 신규 등록시 경고 메세지 출력 : insert event */	  
+
+drop trigger if exists userTbl_InsertTrg_err_msg;
+
+create trigger userTbl_InsertTrg_err_msg
+	after insert -- insert 가 발생된 후 
+	on userTbl -- trigger가 부착될 대상
+	for each row -- 모든 row를 대상
+begin
+	-- 경고 메세지 출력
+	signal sqlstate '45000'
+		set message_text = '신규 데이터가 입력됨.';
+end;
+
+show triggers from shoppingmall;
+
+insert into usertbl 
+values('AAB','AAB',2004,'AA','010',
+'11111111',170,'2024-06-19', '일반고객');
+
+select * from usertbl u where userID = 'AAB';
 
 
 
 
+/* 고객 정보 신규 등록시 태어난 연도 검증용 트리거 : insert event */	  
 
+drop trigger if exists backUserTbl_InserTrg;
 
+create trigger backUserTbl_InserTrg
+	before insert 
+	on userTbl
+	for each row 
+begin
+	if new.birthYear < 1900 then 
+		set new.birthYear = 0;
+	elseif new.birthYear > year(curdate()) then
+		set new.birthYear = year(curdate());
+	end if;
+end;
 
-delete from backup_userTbl;
-select * from backup_userTbl;
+show triggers from shoppingmall;
 
+insert into usertbl 
+values('AAB','AAB',1800,'AA','010',
+'11111111',170,'2024-06-19', '일반고객');
 
-update usertbl 
-   set addr = '부산'
- where userID = 'BBK';
+select * from usertbl u where userID = 'AAB';
 
+insert into usertbl 
+values('ZZZ1','ZZZ1',2000,'AA','010',
+'11111111',170,'2024-06-19', '일반고객');
 
-select * from usertbl u ;
-
-
-delete from usertbl where userID = 'ABB';
-
-select * from usertbl where userID = 'ABB';
-
-select * from backup_userTbl where userID = 'ABB';
-
-
-
-
-
-
-
-
-
-
-
-
-
+select * from usertbl u where userID = 'ZZZ1';
 
 
 
 
-
+/* 고객 정보 수정시 백업 및 모니터링용 트리거 : update event */	
 
 
 
