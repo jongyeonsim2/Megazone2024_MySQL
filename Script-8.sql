@@ -279,11 +279,85 @@ call dynamicSqlProc('buytbl');
 
 
 
+/* ============ 프로시저 - cursor 활용 ============ 
+ * 
+ * 가장 많이 사용되어지는 형태
+ * 
+ * 커서(cursor)
+ *    테이블에서 여러 개의 행을 쿼리한 후 쿼리의 결과인 행 집합에서
+ *    한 행씩 처리 하기 위한 방식임.
+ * 
+ * 커처 처리 단계
+ *    커서 선언(declare) -> 커서 열기(open) -> 커서 fetch -> 커서 close
+ *    커서 fetch : 가져온 한 row 에 대해 데이터 처리를 수행.
+ * 
+ * 실습 내용
+ *    대량의 고객 정보를 업데이트 하기 위한 프로시저를 개발.
+ * 
+ *    고객 정보 테이블에 고객 등급 칼럼을 추가 후 등급 관리를 하려고 함.
+ *    ( 최우수 고객(1500이상), 우수 고객(1000이상), 일반 고객(1이상), 유령 고객 )
+ * 
+ * */
 
+-- 회원 테이블에 고객 등급 칼럼 추가
+alter table usertbl add grade varchar(10);
 
+drop procedure if exists gradeProc;
 
+create procedure gradeProc ()
+begin
+	/* 변수 선언 */
+	declare id varchar(10); -- 회원ID
+	declare sumOfAmount int; -- 총 구매 금액
+	declare userGrade varchar(10);
 
+	/* 커서 제어 변수 선언 */
+	declare endOfRow boolean default false;
 
+	/* 커서 선언 */
+	declare userCursor cursor for
+		select u.userid, sum(b.price * amount)
+		  from usertbl u 
+		  	left outer join buytbl b 
+		  	on u.userid = b.userid
+		  group by u.userid;
+		 
+	/* 커서 핸들링 제어 설정 */
+	declare continue handler
+			for not found set endOfRow = true;
+		
+	/* 커서 OPEN */
+	open userCursor;
+
+	/* 반복문 선언 */
+	grade_loop: loop
+		
+		/* 커서 fetch */
+		fetch userCursor into id, sumOfAmount;
+	
+		if endOfRow then
+			leave grade_loop;
+		end if;
+		
+		case
+			when(sumOfAmount >= 1500) then set userGrade = '최우수고객';
+			when(sumOfAmount >= 1000) then set userGrade = '우수고객';
+			when(sumOfAmount >= 1) then set userGrade = '일반고객';
+			else set userGrade = '유령고객';
+		end case;
+		
+		/* 고객 등급 평가 결과를 반영 */
+		update usertbl 
+		   set grade = userGrade
+		 where userID = id;
+	
+	end loop grade_loop;
+	
+end;
+
+call gradeProc();
+
+select * from usertbl u ;
 
 
 
