@@ -363,13 +363,38 @@ select * from usertbl u ;
 
 
 
+/* ============ 스토어드 function ============ */
+/* 두 정수를 매개변수로 받아서 더한 결과값을 반환하는 함수 */
+-- 전역 환경변수를 1 또는 on 으로 설정
+set global log_bin_trust_function_creators = 1;
+
+drop function if exists userFunc1;
+
+create function userFunc1(val1 int, val2 int)
+	returns int
+begin
+	return val1 + val2;
+end;
+
+select userFunc1(100, 200);
 
 
 
+/* 태어난 년도를 매개변수로 받아서, 현재 나이를 계산 및 반환 함수 */
+drop function if exists getAgeFunc;
 
+create function getAgeFunc(varYear int)
+	returns int
+begin
+	declare age int;
+	set age = year(curdate()) - varYear;
+	return age;
+end;
 
+select getAgeFunc(2000);
 
-
+select userID , name, getAgeFunc(u.birthYear) as '현재 나이'
+  from usertbl u ;
 
 
 
