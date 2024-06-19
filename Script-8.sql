@@ -402,9 +402,37 @@ select userID , name, getAgeFunc(u.birthYear) as '현재 나이'
 
 
 
+/* ==================== Trigger ==================== */
 
+CREATE TABLE backup_userTbl
+( userID  varchar(8) NOT NULL PRIMARY KEY, 
+  name    varchar(10) NOT NULL, 
+  birthYear   int NOT NULL,  
+  addr	  varchar(2) NOT NULL, 
+  mobile1	varchar(3), 
+  mobile2   varchar(8), 
+  height    int,  
+  mDate    date,
+  modType  varchar(2), -- 변경된 타입. '수정' 또는 '삭제'
+  modDate  date, -- 변경된 날짜
+  modUser  varchar(256) -- 변경한 사용자
+);
 
+/* 비즈니스 프로세스 단계 처리용 */
+CREATE TABLE orderTbl -- 구매 테이블
+	(orderNo INT AUTO_INCREMENT PRIMARY KEY, -- 구매 일련번호
+          userID VARCHAR(5), -- 구매한 회원아이디
+	 prodName VARCHAR(5), -- 구매한 물건
+	 orderamount INT );  -- 구매한 개수
 
+CREATE TABLE prodTbl -- 물품 테이블
+	( prodName VARCHAR(5), -- 물건 이름
+	  account INT ); -- 남은 물건수량
+      
+CREATE TABLE deliverTbl -- 배송 테이블
+	( deliverNo  INT AUTO_INCREMENT PRIMARY KEY, -- 배송 일련번호
+	  prodName VARCHAR(5), -- 배송할 물건		  
+	  account INT UNIQUE); -- 배송할 물건개수
 
 
 
