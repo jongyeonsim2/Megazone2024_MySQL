@@ -546,3 +546,39 @@ update usertbl
 
 
 
+
+
+/* 고객 정보 삭제시 백업 및 모니터링용 트리거 : delete event */	
+
+drop trigger if exists backUserTbl_DelTrg;
+
+create trigger backUserTbl_DelTrg
+	after delete 
+	on userTbl
+	for each row
+begin
+	-- 삭제 전 고객 데이터를 보관
+	insert into backup_userTbl
+	values( old.userId, old.name, old.birthYear,
+			old.addr, old.mobile1, old.mobile2, old.height,
+			old.mDate, '삭제', curdate(), current_user());
+end;
+
+show triggers from shoppingmall;
+
+select * from usertbl u where userId = 'AAB';
+
+delete from usertbl where userId = 'AAB';
+
+select * from backup_usertbl  where userId = 'AAB';
+
+
+
+
+
+
+
+
+
+
+
