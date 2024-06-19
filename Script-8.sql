@@ -208,12 +208,45 @@ begin
 end;
 
 
+call ifElseProc('김경호'); -- 전남
+call ifElseProc('하준경'); -- 서울
 
 
 
 
 
+/* ============ in 매개변수, 반복문 이 있는 프로시저 ============ */
+
+drop table if exists gugudanTBL;
+
+create table gugudanTBL ( txt varchar(100) );
+
+drop procedure if exists gugudanProc;
 
 
+create procedure gugudanProc()
+begin
+    declare str varchar(100); -- 구구단 결과 식 ( 2 X 1 = 2 )
+	declare dan int; -- 구구단의 단
+    declare i int; -- 1 ~ 9
+    set dan = 2; -- 2 단부터 시작.
+    
+    delete from gugudanTBL;
+    
+    while ( dan < 10) do -- 2 ~ 9 단 반복
+		set str = '';
+        set i = 1;
+        while ( i < 10) do
+			set str = concat( str, ' ', dan, 'X', i, '=', dan*i );
+            set i = i + 1;
+        end while;
+        set dan = dan + 1;
+        insert into gugudanTBL values(str);
+    end while;
+end ;
 
+
+call gugudanProc();
+
+select * from gugudanTBL;
 
