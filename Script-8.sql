@@ -250,3 +250,95 @@ call gugudanProc();
 
 select * from gugudanTBL;
 
+
+
+
+
+/* ============ 동적(dynamic) SQL 이 있는 프로시저 ============ 
+ * 
+ * 상황에 따라 SQL 변경이 실시간으로 필요한 경우,
+ * 동적 SQL 을 사용하여, 실시간으로 수정 및 실행해서 사용.
+ * 
+ * */
+
+drop procedure if exists dynamicSqlProc;
+
+create procedure dynamicSqlProc ( in tblName varchar(20) )
+begin
+	-- 매개변수로 받은 테이블명을 사용해서 sql 문자열을 생성.
+	set @sqlQuery = concat('select * from ', tblName);
+
+	prepare myQuery from @sqlQuery; -- 동적 sql 실행 준비
+									-- syntax, 테이블 존재 유무, 생성 권한 체크...
+	execute myQuery;-- 동적 sql 실행
+end;
+
+call dynamicSqlProc('usertbl');
+call dynamicSqlProc('buytbl');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
