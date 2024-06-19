@@ -521,7 +521,28 @@ select * from usertbl u where userID = 'ZZZ1';
 
 /* 고객 정보 수정시 백업 및 모니터링용 트리거 : update event */	
 
+drop trigger if exists backUserTbl_UpTrg;
 
+create trigger backUserTbl_UpTrg
+	after update 
+	on userTbl
+	for each row
+begin
+	-- 변경 전 고객 데이터를 보관
+	insert into backup_userTbl
+	values( old.userId, old.name, old.birthYear,
+			old.addr, old.mobile1, old.mobile2, old.height,
+			old.mDate, '수정', curdate(), current_user());
+end;
+
+show triggers from shoppingmall;
+
+select * from usertbl u where userID = 'BBK';
+select * from backup_userTbl u where userID = 'BBK';
+
+update usertbl 
+   set addr = '서울'
+ where userID = 'BBK';
 
 
 
