@@ -186,3 +186,21 @@ select * from testtbl t ;
 select @outValue;
 
 
+
+
+
+/* ============ in 매개변수, if 조건절 이 있는 프로시저 ============ */
+
+drop procedure if exists ifElseProc;
+
+
+
+
+
+
+
+
+
+
+
+
