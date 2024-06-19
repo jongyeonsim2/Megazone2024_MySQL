@@ -404,8 +404,10 @@ select userID , name, getAgeFunc(u.birthYear) as '현재 나이'
 
 /* ==================== Trigger ==================== */
 
+ drop table if exists backup_userTbl;
+ 
 CREATE TABLE backup_userTbl
-( userID  varchar(8) NOT NULL PRIMARY KEY, 
+( userID  varchar(8) NOT NULL, 
   name    varchar(10) NOT NULL, 
   birthYear   int NOT NULL,  
   addr	  varchar(2) NOT NULL, 
@@ -441,11 +443,23 @@ CREATE TABLE deliverTbl -- 배송 테이블
 
 
 
+delete from backup_userTbl;
+select * from backup_userTbl;
 
 
+update usertbl 
+   set addr = '부산'
+ where userID = 'BBK';
 
 
+select * from usertbl u ;
 
+
+delete from usertbl where userID = 'ABB';
+
+select * from usertbl where userID = 'ABB';
+
+select * from backup_userTbl where userID = 'ABB';
 
 
 
